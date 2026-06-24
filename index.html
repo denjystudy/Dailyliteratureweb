@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Journal Literature Tracker</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #26231f;
+      --muted: #756f66;
+      --faint: #aaa39a;
+      --line: #ddd8cf;
+      --panel: #fffdf8;
+      --paper: #f7f3ea;
+      --soft: #eee8dc;
+      --accent: #6f7d62;
+      --accent-dark: #4d5b44;
+      --warn: #9b7a45;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      letter-spacing: 0;
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+      background: #fbf8f1;
+    }
+
+    .wrap {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 28px 24px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 24px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.1;
+      font-weight: 520;
+    }
+
+    .subtitle {
+      max-width: 760px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .timebox {
+      min-width: 172px;
+      padding: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+      text-align: right;
+      border-top: 1px solid var(--line);
+    }
+
+    .timebox strong {
+      color: var(--ink);
+      font-weight: 520;
+    }
+
+    main.wrap {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    aside,
+    .panel,
+    .paper-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+    }
+
+    aside {
+      position: sticky;
+      top: 18px;
+      padding: 18px;
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 560;
+      text-transform: uppercase;
+    }
+
+    .search {
+      width: 100%;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      padding: 0 11px;
+      color: var(--ink);
+      background: #fffefa;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .search:focus {
+      border-color: var(--accent);
+    }
+
+    .filters {
+      display: grid;
+      gap: 8px;
+      margin: 18px 0 24px;
+    }
+
+    .status-filter {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      margin: 0 0 22px;
+    }
+
+    .status-filter button {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      color: var(--muted);
+      background: #fffefa;
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .status-filter button.active {
+      color: #fffefa;
+      background: var(--accent-dark);
+      border-color: var(--accent-dark);
+    }
+
+    .filter {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .filter input {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--accent);
+    }
+
+    .stats {
+      display: grid;
+      gap: 1px;
+      border: 1px solid var(--line);
+      background: var(--line);
+    }
+
+    .stat {
+      padding: 13px;
+      background: #fbf8f1;
+    }
+
+    .stat strong {
+      display: block;
+      color: var(--accent-dark);
+      font-size: 24px;
+      font-weight: 520;
+      line-height: 1;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .overview {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      min-height: 150px;
+      padding: 16px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 92px 1fr 28px;
+      gap: 10px;
+      align-items: center;
+      margin: 11px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .bar {
+      height: 7px;
+      overflow: hidden;
+      background: var(--soft);
+      border-radius: 999px;
+    }
+
+    .bar > span {
+      display: block;
+      height: 100%;
+      background: var(--accent);
+      border-radius: 999px;
+    }
+
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 4px 8px;
+      color: #5f6656;
+      background: #f1ece2;
+      border: 1px solid #e2dbcf;
+      border-radius: 3px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .feed {
+      display: grid;
+      gap: 12px;
+    }
+
+    .paper-card {
+      padding: 18px;
+    }
+
+    .paper-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .paper-card h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 560;
+      line-height: 1.4;
+    }
+
+    .score {
+      min-width: 58px;
+      padding: 7px 9px;
+      color: var(--accent-dark);
+      background: #f1ece2;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 560;
+    }
+
+    .star-btn {
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 50%;
+      color: var(--faint);
+      background: transparent;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .star-btn.active {
+      color: #8a6b2f;
+      background: transparent;
+    }
+
+    .star-btn:hover {
+      color: #8a6b2f;
+      background: #f5efe1;
+    }
+
+    .paper-actions .star-btn {
+      margin-left: auto;
+    }
+
+    .meta {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .abstract {
+      margin: 13px 0;
+      color: #39342e;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .paper-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 33px;
+      padding: 7px 10px;
+      color: var(--ink);
+      background: #fffefa;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      font-size: 13px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      color: #fffefa;
+      background: var(--accent-dark);
+      border-color: var(--accent-dark);
+    }
+
+    .btn.active {
+      color: #fffefa;
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .btn.warn {
+      color: var(--warn);
+      background: #fbf8f1;
+    }
+
+    .btn.disabled {
+      color: var(--faint);
+      background: #f7f3ea;
+      cursor: default;
+    }
+
+    .empty {
+      display: none;
+      padding: 28px;
+      color: var(--muted);
+      background: var(--panel);
+      border: 1px dashed var(--line);
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    @media (max-width: 920px) {
+      .topbar,
+      .paper-head {
+        display: block;
+      }
+
+      .timebox {
+        margin-top: 18px;
+        text-align: left;
+      }
+
+      main.wrap {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+      }
+
+      .overview {
+        grid-template-columns: 1fr;
+      }
+
+      .score {
+        display: inline-block;
+        margin-top: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap topbar">
+      <div>
+        <h1>Journal Literature Tracker</h1>
+        <p class="subtitle">A quiet dashboard for journal articles on building physics, moisture transfer, moisture buffering, 3D and 4D printing, bio-based materials, and low-carbon responsive design.</p>
+      </div>
+      <div class="timebox">
+        <strong>Daily delivery</strong><br>
+        Europe/Kyiv 08:00
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <aside>
+      <p class="section-title">Search</p>
+      <input id="search" class="search" type="search" placeholder="Title, journal, material, method">
+
+      <div class="filters" id="filters"></div>
+
+      <p class="section-title">Status Filter</p>
+      <div class="status-filter" id="statusFilter">
+        <button class="active" type="button" data-status="All">All</button>
+        <button type="button" data-status="To read">To read</button>
+        <button type="button" data-status="Read">Read</button>
+        <button type="button" data-status="Saved">Saved</button>
+      </div>
+
+      <p class="section-title">Overview</p>
+      <div class="stats">
+        <div class="stat"><strong id="totalPapers">0</strong><span>Tracked articles</span></div>
+        <div class="stat"><strong id="pdfReady">0</strong><span>Open PDFs available</span></div>
+        <div class="stat"><strong id="avgScore">0</strong><span>Average relevance</span></div>
+      </div>
+    </aside>
+
+    <section>
+      <div class="overview">
+        <div class="panel">
+          <p class="section-title">Topic Mix</p>
+          <div id="topicBars"></div>
+        </div>
+        <div class="panel">
+          <p class="section-title">Methods And Metrics</p>
+          <div class="tag-cloud" id="tagCloud"></div>
+        </div>
+        <div class="panel">
+          <p class="section-title">Reading Status</p>
+          <div id="statusBars"></div>
+        </div>
+      </div>
+
+      <div class="feed" id="feed"></div>
+      <div class="empty" id="empty">No articles match the current filters.</div>
+    </section>
+  </main>
+
+  <script src="literature-data.js"></script>
+  <script>
+    const SUPABASE_URL = "https://xfikxinwupwhexietfvo.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_BkPixVx-V0Lkw2D9QchA4A_g4Jamn5j";
+    const localPapers = window.LITERATURE_PAPERS || [];
+    let papers = localPapers.map((paper, index) => normalizePaper(paper, index));
+    const filterTags = ["MBV", "NORDTEST", "3D printing", "4D printing", "bio-based", "geopolymer", "passive humidity", "hygrothermal simulation", "open PDF"];
+    const filters = document.getElementById("filters");
+    const feed = document.getElementById("feed");
+    const empty = document.getElementById("empty");
+    const search = document.getElementById("search");
+    const statusFilter = document.getElementById("statusFilter");
+    let activeStatus = "All";
+
+    function normalizePaper(paper, index) {
+      const normalized = { ...paper };
+      normalized.tags = Array.isArray(normalized.tags) ? normalized.tags : [];
+      normalized.status = normalized.status === "Read" ? "Read" : "To read";
+      normalized.saved = Boolean(normalized.saved);
+      normalized.id = normalized.id || normalized.doi || normalized.url || `${normalized.title}-${index}`;
+      return normalized;
+    }
+
+    function supabaseRequest(path, options = {}) {
+      return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        ...options,
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          ...options.headers
+        }
+      });
+    }
+
+    async function loadSupabaseData() {
+      try {
+        const [papersResponse, statesResponse] = await Promise.all([
+          supabaseRequest("papers?select=*&order=score.desc.nullslast,title.asc"),
+          supabaseRequest("paper_state?select=*")
+        ]);
+
+        if (!papersResponse.ok || !statesResponse.ok) {
+          throw new Error("Supabase data request failed");
+        }
+
+        const dbPapers = await papersResponse.json();
+        const dbStates = await statesResponse.json();
+        const stateByPaperId = Object.fromEntries(dbStates.map(state => [state.paper_id, state]));
+
+        papers = dbPapers.map((paper, index) => {
+          const state = stateByPaperId[paper.id] || {};
+          return normalizePaper({
+            ...paper,
+            status: state.status || "To read",
+            saved: Boolean(state.saved)
+          }, index);
+        });
+
+        renderCharts();
+        render();
+      } catch (error) {
+        console.warn("Using local literature data because Supabase could not be reached.", error);
+      }
+    }
+
+    async function savePaperState(paper) {
+      const response = await supabaseRequest("paper_state?on_conflict=paper_id", {
+        method: "POST",
+        headers: {
+          Prefer: "resolution=merge-duplicates,return=minimal"
+        },
+        body: JSON.stringify({
+          paper_id: paper.id,
+          status: paper.status,
+          saved: paper.saved
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Could not save paper state to Supabase");
+      }
+    }
+
+    papers.forEach((paper, index) => {
+      paper.id = paper.doi || paper.url || `${paper.title}-${index}`;
+      if (paper.status === "Saved") {
+        paper.status = "To read";
+        paper.saved = true;
+      }
+      if (typeof paper.saved !== "boolean") paper.saved = false;
+    });
+
+    filterTags.forEach(tag => {
+      const label = document.createElement("label");
+      label.className = "filter";
+      label.innerHTML = `<input type="checkbox" value="${tag}"> ${tag}`;
+      filters.appendChild(label);
+    });
+
+    function hasTag(paper, tag) {
+      if (tag === "open PDF") return Boolean(paper.pdf);
+      return paper.tags.includes(tag);
+    }
+
+    function render() {
+      const query = search.value.trim().toLowerCase();
+      const active = [...filters.querySelectorAll("input:checked")].map(input => input.value);
+      const visible = papers.filter(paper => {
+        const haystack = [paper.title, paper.authors, paper.journal, paper.summary, paper.tags.join(" ")].join(" ").toLowerCase();
+        const matchesStatus = activeStatus === "All" || (activeStatus === "Saved" ? paper.saved : paper.status === activeStatus);
+        return (!query || haystack.includes(query)) && active.every(tag => hasTag(paper, tag)) && matchesStatus;
+      });
+
+      feed.innerHTML = "";
+      visible.forEach(paper => {
+        const article = document.createElement("article");
+        article.className = "paper-card";
+        article.innerHTML = `
+          <div class="paper-head">
+            <div>
+              <h2>${paper.title}</h2>
+              <p class="meta">${paper.authors}<br>${paper.journal}, ${paper.year}${paper.doi ? " · DOI: " + paper.doi : ""}</p>
+            </div>
+            <div class="score">${paper.score}</div>
+          </div>
+          <p class="abstract">${paper.summary}</p>
+          <div class="tag-cloud">${paper.tags.map(tag => `<span class="tag">${tag}</span>`).join("")}</div>
+          <div class="paper-actions">
+            ${paper.url ? `<a class="btn primary" href="${paper.url}" target="_blank" rel="noreferrer">Article</a>` : `<span class="btn disabled">Article pending</span>`}
+            ${paper.pdf ? `<a class="btn" href="${paper.pdf}" target="_blank" rel="noreferrer">PDF</a>` : `<span class="btn warn">PDF pending</span>`}
+            <button class="btn status-btn ${paper.status === "To read" ? "active" : ""}" type="button" data-id="${paper.id}" data-status="To read">To read</button>
+            <button class="btn status-btn ${paper.status === "Read" ? "active" : ""}" type="button" data-id="${paper.id}" data-status="Read">Read</button>
+            <button class="star-btn ${paper.saved ? "active" : ""}" type="button" data-id="${paper.id}" title="${paper.saved ? "Saved" : "Save"}" aria-label="${paper.saved ? "Saved" : "Save"}">${paper.saved ? "★" : "☆"}</button>
+          </div>
+        `;
+        feed.appendChild(article);
+      });
+
+      empty.style.display = visible.length ? "none" : "block";
+      document.getElementById("totalPapers").textContent = papers.length;
+      document.getElementById("pdfReady").textContent = papers.filter(p => p.pdf).length;
+      document.getElementById("avgScore").textContent = papers.length ? Math.round(papers.reduce((sum, p) => sum + Number(p.score || 0), 0) / papers.length) : 0;
+    }
+
+    function renderCharts() {
+      const counts = {};
+      papers.flatMap(p => p.tags).forEach(tag => counts[tag] = (counts[tag] || 0) + 1);
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      const max = Math.max(1, ...sorted.map(([, count]) => count));
+      document.getElementById("topicBars").innerHTML = sorted.slice(0, 5).map(([tag, count]) => `
+        <div class="bar-row"><span>${tag}</span><div class="bar"><span style="width:${Math.round(count / max * 100)}%"></span></div><b>${count}</b></div>
+      `).join("") || `<div class="bar-row"><span>No data</span><div class="bar"><span style="width:0%"></span></div><b>0</b></div>`;
+      document.getElementById("tagCloud").innerHTML = sorted.map(([tag]) => `<span class="tag">${tag}</span>`).join("") || `<span class="tag">No tags</span>`;
+
+      const statusOrder = ["To read", "Read", "Saved"];
+      const statusCounts = Object.fromEntries(statusOrder.map(status => [status, 0]));
+      papers.forEach(paper => {
+        const status = paper.status === "Read" ? "Read" : "To read";
+        statusCounts[status] += 1;
+        if (paper.saved) statusCounts.Saved += 1;
+      });
+      const statusMax = Math.max(1, ...Object.values(statusCounts));
+      document.getElementById("statusBars").innerHTML = statusOrder.map(status => `
+        <div class="bar-row"><span>${status}</span><div class="bar"><span style="width:${Math.round(statusCounts[status] / statusMax * 100)}%"></span></div><b>${statusCounts[status]}</b></div>
+      `).join("");
+    }
+
+    filters.addEventListener("change", render);
+    search.addEventListener("input", render);
+    statusFilter.addEventListener("click", event => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      activeStatus = button.dataset.status;
+      statusFilter.querySelectorAll("button").forEach(item => item.classList.toggle("active", item === button));
+      render();
+    });
+    feed.addEventListener("click", async event => {
+      const button = event.target.closest(".status-btn");
+      if (!button) return;
+      const paper = papers.find(item => item.id === button.dataset.id);
+      if (!paper) return;
+      const previousStatus = paper.status;
+      paper.status = button.dataset.status;
+      renderCharts();
+      render();
+      try {
+        await savePaperState(paper);
+      } catch (error) {
+        paper.status = previousStatus;
+        renderCharts();
+        render();
+        console.warn(error);
+      }
+    });
+    feed.addEventListener("click", async event => {
+      const button = event.target.closest(".star-btn");
+      if (!button) return;
+      const paper = papers.find(item => item.id === button.dataset.id);
+      if (!paper) return;
+      const previousSaved = paper.saved;
+      paper.saved = !paper.saved;
+      renderCharts();
+      render();
+      try {
+        await savePaperState(paper);
+      } catch (error) {
+        paper.saved = previousSaved;
+        renderCharts();
+        render();
+        console.warn(error);
+      }
+    });
+    renderCharts();
+    render();
+    loadSupabaseData();
+  </script>
+</body>
+</html>
