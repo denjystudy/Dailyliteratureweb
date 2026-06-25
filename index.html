@@ -257,7 +257,27 @@
     }
 
     .paper-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 240px;
+      gap: 16px;
+      align-items: stretch;
       padding: 18px;
+    }
+
+    .paper-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 240px;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .paper-card > :not(.notes-panel) {
+      grid-column: 1;
+    }
+
+    .paper-card > .notes-panel {
+      grid-column: 2;
+      grid-row: 1 / span 4;
     }
 
     .paper-head {
@@ -337,6 +357,49 @@
       align-items: center;
     }
 
+    .notes-panel {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 100%;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fffdf9;
+      padding: 12px;
+    }
+
+    .notes-title {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 560;
+      text-transform: uppercase;
+    }
+
+    .notes-input {
+      width: 100%;
+      min-height: 142px;
+      resize: vertical;
+      border: 0;
+      outline: none;
+      color: var(--ink);
+      background: transparent;
+      font: inherit;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .notes-input::placeholder {
+      color: var(--faint);
+    }
+
+    .notes-state {
+      min-height: 18px;
+      margin-top: 8px;
+      color: var(--faint);
+      font-size: 12px;
+      text-align: right;
+    }
+
     .btn {
       display: inline-flex;
       align-items: center;
@@ -411,6 +474,19 @@
       .score {
         display: inline-block;
         margin-top: 10px;
+      }
+
+      .paper-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .paper-card {
+        grid-template-columns: 1fr;
+      }
+
+      .paper-card > .notes-panel {
+        grid-column: 1;
+        grid-row: auto;
       }
     }
   </style>
@@ -492,6 +568,7 @@
       normalized.tags = Array.isArray(normalized.tags) ? normalized.tags : [];
       normalized.status = normalized.status === "Read" ? "Read" : "To read";
       normalized.saved = Boolean(normalized.saved);
+      normalized.notes = normalized.notes || "";
       normalized.id = normalized.id || normalized.doi || normalized.url || `${normalized.title}-${index}`;
       return normalized;
     }
@@ -528,7 +605,8 @@
           return normalizePaper({
             ...paper,
             status: state.status || "To read",
-            saved: Boolean(state.saved)
+            saved: Boolean(state.saved),
+            notes: state.notes || ""
           }, index);
         });
 
@@ -548,7 +626,8 @@
         body: JSON.stringify({
           paper_id: paper.id,
           status: paper.status,
-          saved: paper.saved
+          saved: paper.saved,
+          notes: paper.notes || ""
         })
       });
 
@@ -564,6 +643,7 @@
         paper.saved = true;
       }
       if (typeof paper.saved !== "boolean") paper.saved = false;
+      if (typeof paper.notes !== "string") paper.notes = "";
     });
 
     filterTags.forEach(tag => {
@@ -576,6 +656,10 @@
     function hasTag(paper, tag) {
       if (tag === "open PDF") return Boolean(paper.pdf);
       return paper.tags.includes(tag);
+    }
+
+    function escapeTextarea(value) {
+      return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
     function render() {
@@ -614,6 +698,13 @@
             <button class="star-btn ${paper.saved ? "active" : ""}" type="button" data-id="${paper.id}" title="${paper.saved ? "Saved" : "Save"}" aria-label="${paper.saved ? "Saved" : "Save"}">${paper.saved ? "★" : "☆"}</button>
           </div>
         `;
+        article.insertAdjacentHTML("beforeend", `
+          <div class="notes-panel">
+            <p class="notes-title">Notes</p>
+            <textarea class="notes-input" data-id="${paper.id}">${escapeTextarea(paper.notes)}</textarea>
+            <div class="notes-state" data-note-state="${paper.id}"></div>
+          </div>
+        `);
         feed.appendChild(article);
       });
 
@@ -690,6 +781,26 @@
         render();
         console.warn(error);
       }
+    });
+    const noteTimers = {};
+    feed.addEventListener("input", event => {
+      const input = event.target.closest(".notes-input");
+      if (!input) return;
+      const paper = papers.find(item => item.id === input.dataset.id);
+      if (!paper) return;
+      paper.notes = input.value;
+      const state = feed.querySelector(`[data-note-state="${paper.id}"]`);
+      if (state) state.textContent = "Saving...";
+      clearTimeout(noteTimers[paper.id]);
+      noteTimers[paper.id] = setTimeout(async () => {
+        try {
+          await savePaperState(paper);
+          if (state) state.textContent = "Saved";
+        } catch (error) {
+          if (state) state.textContent = "Not saved";
+          console.warn(error);
+        }
+      }, 700);
     });
     renderCharts();
     render();
