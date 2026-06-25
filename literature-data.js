@@ -1,5 +1,19 @@
 window.LITERATURE_PAPERS = [
   {
+    title: "3D-printed clay components with high surface area for passive indoor moisture buffering",
+    authors: "Vincenzo Gentile, Juan Diego Vargas Velasquez, Stefano Fantucci, Giorgia Autretto, Roberta Gabrieli, Pardeep Kumar Gianchandani, Marco Armandi, Francesco Baino",
+    journal: "Journal of Building Engineering",
+    year: 2024,
+    doi: "10.1016/j.jobe.2024.109631",
+    url: "https://doi.org/10.1016/j.jobe.2024.109631",
+    pdf: "",
+    score: 97,
+    status: "To read",
+    saved: false,
+    summary: "Develops liquid-deposition 3D-printed clay components with increased exposed surface area for passive indoor moisture buffering. The study links parametric surface-area design, practical MBV improvement, material reduction, stabilization methods, and microstructural changes in clay components.",
+    tags: ["MBV", "3D printing", "clay", "passive moisture control", "surface-area design", "moisture buffering", "building component", "hygrothermal transfer"]
+  },
+  {
     title: "Low-carbon indoor humidity regulation via 3D-printed superhygroscopic building components",
     authors: "Magda Posani, Vera Voney, Pietro Odaglia, Yi Du, Anastasija Komkova, Coralie Brumaud, Benjamin Dillenburger, Guillaume Habert",
     journal: "Nature Communications",

@@ -7,16 +7,16 @@
   <style>
     :root {
       color-scheme: light;
-      --ink: #26231f;
-      --muted: #756f66;
-      --faint: #aaa39a;
-      --line: #ddd8cf;
-      --panel: #fffdf8;
-      --paper: #f7f3ea;
-      --soft: #eee8dc;
-      --accent: #6f7d62;
-      --accent-dark: #4d5b44;
-      --warn: #9b7a45;
+      --ink: #47352b;
+      --muted: #8a6958;
+      --faint: #b98f7a;
+      --line: #dfcfc2;
+      --panel: #fffdf9;
+      --paper: #fffefe;
+      --soft: #f8ead5;
+      --accent: #95cafc;
+      --accent-dark: #d96f42;
+      --warn: #b35f36;
     }
 
     * {
@@ -33,7 +33,7 @@
 
     header {
       border-bottom: 1px solid var(--line);
-      background: #fbf8f1;
+      background: #ffffff;
     }
 
     .wrap {
@@ -115,7 +115,7 @@
       border-radius: 3px;
       padding: 0 11px;
       color: var(--ink);
-      background: #fffefa;
+      background: #ffffff;
       font-size: 14px;
       outline: none;
     }
@@ -142,14 +142,14 @@
       border: 1px solid var(--line);
       border-radius: 3px;
       color: var(--muted);
-      background: #fffefa;
+      background: #ffffff;
       font: inherit;
       font-size: 12px;
       cursor: pointer;
     }
 
     .status-filter button.active {
-      color: #fffefa;
+      color: #ffffff;
       background: var(--accent-dark);
       border-color: var(--accent-dark);
     }
@@ -178,7 +178,7 @@
 
     .stat {
       padding: 13px;
-      background: #fbf8f1;
+      background: #fffdf9;
     }
 
     .stat strong {
@@ -228,7 +228,7 @@
     .bar > span {
       display: block;
       height: 100%;
-      background: var(--accent);
+      background: #95cafc;
       border-radius: 999px;
     }
 
@@ -243,9 +243,9 @@
       align-items: center;
       min-height: 26px;
       padding: 4px 8px;
-      color: #5f6656;
-      background: #f1ece2;
-      border: 1px solid #e2dbcf;
+      color: #8a552f;
+      background: #fff7e2;
+      border: 1px solid #f3dfb9;
       border-radius: 3px;
       font-size: 12px;
       white-space: nowrap;
@@ -278,7 +278,7 @@
       min-width: 58px;
       padding: 7px 9px;
       color: var(--accent-dark);
-      background: #f1ece2;
+      background: #fff2ca;
       border: 1px solid var(--line);
       border-radius: 3px;
       text-align: center;
@@ -302,13 +302,13 @@
     }
 
     .star-btn.active {
-      color: #8a6b2f;
+      color: #d96f42;
       background: transparent;
     }
 
     .star-btn:hover {
-      color: #8a6b2f;
-      background: #f5efe1;
+      color: #d96f42;
+      background: #fff2ca;
     }
 
     .paper-actions .star-btn {
@@ -324,7 +324,7 @@
 
     .abstract {
       margin: 13px 0;
-      color: #39342e;
+      color: #4f3b31;
       font-size: 14px;
       line-height: 1.65;
     }
@@ -344,7 +344,7 @@
       min-height: 33px;
       padding: 7px 10px;
       color: var(--ink);
-      background: #fffefa;
+      background: #ffffff;
       border: 1px solid var(--line);
       border-radius: 3px;
       font-size: 13px;
@@ -353,25 +353,25 @@
     }
 
     .btn.primary {
-      color: #fffefa;
+      color: #ffffff;
       background: var(--accent-dark);
       border-color: var(--accent-dark);
     }
 
     .btn.active {
-      color: #fffefa;
-      background: var(--accent);
-      border-color: var(--accent);
+      color: #47352b;
+      background: #b5d8ff;
+      border-color: #95cafc;
     }
 
     .btn.warn {
       color: var(--warn);
-      background: #fbf8f1;
+      background: #fffdf9;
     }
 
     .btn.disabled {
       color: var(--faint);
-      background: #f7f3ea;
+      background: #fffdf9;
       cursor: default;
     }
 
@@ -585,6 +585,11 @@
         const haystack = [paper.title, paper.authors, paper.journal, paper.summary, paper.tags.join(" ")].join(" ").toLowerCase();
         const matchesStatus = activeStatus === "All" || (activeStatus === "Saved" ? paper.saved : paper.status === activeStatus);
         return (!query || haystack.includes(query)) && active.every(tag => hasTag(paper, tag)) && matchesStatus;
+      }).sort((a, b) => {
+        const statusRank = { "To read": 0, "Read": 1 };
+        const statusDiff = (statusRank[a.status] ?? 0) - (statusRank[b.status] ?? 0);
+        if (statusDiff) return statusDiff;
+        return Number(b.score || 0) - Number(a.score || 0);
       });
 
       feed.innerHTML = "";
